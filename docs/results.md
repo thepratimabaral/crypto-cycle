@@ -6,9 +6,14 @@
 worse.
 
 The method, the parameters and this pass/fail test were committed and tagged `method-v1`
-(`8103d8f`) before the backtest code was written. The code was committed (`efea6d8`) before
+(`d8decfd`) before the backtest code was written. The code was committed (`326fbc7`) before
 it was run, and it was run once. Full tables: [`results-btc-v1.md`](results-btc-v1.md). Raw
 numbers: `data/results/btc_v1.json`.
+
+Note on history: on 2026-10-02 the data commit that `method-v1.md` names (`4158353`) was
+squashed into `c217d50` and force-pushed, and this work was rebased onto it. The price
+CSVs are byte-identical, and re-running the backtest on the rebased code reproduces every
+number exactly.
 
 ### Primary test: BTC, 90 days, 2013-01-01 → 2026-07-03 (55 effective windows)
 
