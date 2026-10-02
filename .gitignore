@@ -6,8 +6,16 @@ venv/
 
 # OS / editor
 .DS_Store
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 .idea/
 
 # claude.ai page (kept locally, not in repo)
 sprint.html
+
+# Claude Code (personal overrides; .claude/settings.json and skills are shared)
+.claude/settings.local.json
+CLAUDE.local.md

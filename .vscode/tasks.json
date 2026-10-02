@@ -1,0 +1,131 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Setup: create .venv and install requirements",
+      "type": "shell",
+      "command": "python3 -m venv .venv && .venv/bin/pip install -r requirements.txt",
+      "windows": {
+        "command": "py -3 -m venv .venv; .venv\\Scripts\\pip install -r requirements.txt"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Check data",
+      "detail": "Refetch all 7 coins, rewrite data/raw/*.csv, report PASS/FAIL",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "-m",
+        "pipeline.check_data"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Backtest (BTC, v1)",
+      "detail": "Pre-registered backtest from the committed CSV \u2192 docs/results-btc-v1.md",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "-m",
+        "pipeline.backtest"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Live prediction log",
+      "detail": "Refetch and append today's v1 forecasts to web/data/predictions_log.json",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "-m",
+        "pipeline.live_log"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Tests",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "-m",
+        "pytest",
+        "tests",
+        "-q"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run pipeline",
+      "detail": "python -m pipeline.run: writes web/data/*.json (needs pipeline/run.py, M2)",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "-m",
+        "pipeline.run"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Serve dashboard",
+      "detail": "http://localhost:8000 from web/ (needs web/, M1 web track)",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "-m",
+        "http.server",
+        "-d",
+        "web",
+        "8000"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "http-server",
+        "pattern": {
+          "regexp": "^__never_matches__$"
+        },
+        "background": {
+          "activesBegin": true,
+          "beginsPattern": "^Serving HTTP",
+          "endsPattern": "^Serving HTTP"
+        }
+      }
+    },
+    {
+      "label": "Run pipeline, then serve dashboard",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Run pipeline",
+        "Serve dashboard"
+      ],
+      "problemMatcher": []
+    }
+  ]
+}
