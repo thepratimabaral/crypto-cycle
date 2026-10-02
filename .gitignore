@@ -4,10 +4,10 @@ __pycache__/
 .venv/
 venv/
 
-# Raw API downloads (re-created by the pipeline)
-data/raw/
-
 # OS / editor
 .DS_Store
 .vscode/
 .idea/
+
+# claude.ai page (kept locally, not in repo)
+sprint.html
