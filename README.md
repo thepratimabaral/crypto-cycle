@@ -17,6 +17,9 @@ python3 -m pipeline.run          # downloads data, writes web/data/*.json  (from
 python3 -m http.server -d web 8000   # then open http://localhost:8000
 ```
 
+In VS Code: install the recommended extensions when prompted, run **Tasks: Run Task → Setup**
+once, then pick *Check data*, *Run pipeline* or *Serve dashboard* from the Run and Debug panel (F5).
+
 ## Data sources (free, no API key)
 
 - BTC price, hash rate and miner revenue: blockchain.info charts API
