@@ -4,9 +4,6 @@ __pycache__/
 .venv/
 venv/
 
-# Raw API downloads (re-created by the pipeline)
-data/raw/
-
 # OS / editor
 .DS_Store
 .vscode/

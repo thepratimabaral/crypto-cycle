@@ -180,11 +180,11 @@ git push -u origin main</pre></div>
     <div class="panel">
       <span class="label">Conventions</span>
       <table class="conv"><tbody>
-        <tr><th>Branches</th><td><code>data/&lt;topic&gt;</code> · <code>web/&lt;topic&gt;</code></td></tr>
-        <tr><th>Merging</th><td>PR only · 1 approval from the other track · <code>main</code> protected</td></tr>
-        <tr><th>Tracking</th><td>One issue per task · labels <code>data</code> <code>web</code> <code>M0</code>–<code>M6</code> · <code>Closes #n</code> in PR</td></tr>
-        <tr><th>Interface</th><td><code>docs/data-contract.md</code> · changes need both approvals</td></tr>
-        <tr><th>Excluded</th><td>Secrets, API keys, <code>data/raw/</code></td></tr>
+        <tr><th>Commits</th><td>Prefix with track: <code>data: add indicators</code> · <code>web: history chart</code></td></tr>
+        <tr><th>Pushing</th><td>Direct push to <code>main</code> · <code>git pull</code> before <code>git push</code> · force push and branch deletion blocked</td></tr>
+        <tr><th>Tracking</th><td>GitHub issues <code>#1</code>–<code>#13</code> + this page · <code>closes #n</code> in commit messages</td></tr>
+        <tr><th>Interface</th><td><code>docs/data-contract.md</code> · agree changes with your teammate first</td></tr>
+        <tr><th>Excluded</th><td>Secrets, API keys, <code>.venv/</code></td></tr>
         <tr><th>Cadence</th><td>Daily 10-min sync · milestone review at each gate</td></tr>
       </tbody></table>
     </div>
@@ -201,7 +201,7 @@ const MILESTONES = [
       { id: "m0-protect", t: "Protect main, create labels and project board", out: "Settings → Branches · Projects" },
       { id: "m0-contract", t: "Review and approve data contract", out: "docs/data-contract.md" }
     ] },
-  { id: "M1", name: "Foundations", gate: "Both PRs merged; dashboard renders sample data.",
+  { id: "M1", name: "Foundations", gate: "Both tracks pushed to main; dashboard renders sample data.",
     handoff: "Web builds against sample data until M2.",
     data: [
       { id: "m1-env", t: "Python environment and dependencies", out: "requirements.txt · .venv" },
@@ -209,7 +209,6 @@ const MILESTONES = [
       { id: "m1-notes", t: "Source coverage, gaps and anomalies", out: "docs/data-notes.md" }
     ],
     web: [
-      { id: "m1-issues", t: "Issues for every v1 task", out: "GitHub Issues · labels M0–M6" },
       { id: "m1-sample", t: "Contract-conformant sample data", out: "web/data/sample/*.json" },
       { id: "m1-shell", t: "App shell: layout, asset tabs, price chart", out: "web/index.html" }
     ] },
@@ -252,7 +251,7 @@ const MILESTONES = [
     joint: [
       { id: "m5-review", t: "Results review across assets and horizons", out: "docs/results.md" },
       { id: "m5-spot", t: "Manual spot-check: 3 dates per asset", out: "docs/results.md" },
-      { id: "m5-fix", t: "Resolve issues found in review", out: "GitHub Issues" }
+      { id: "m5-fix", t: "Fix problems found in review", out: "main" }
     ] },
   { id: "M6", name: "Release", gate: "v1.0 tagged and live.",
     data: [ { id: "m6-docs", t: "README and methodology copy", out: "README.md · web/" } ],

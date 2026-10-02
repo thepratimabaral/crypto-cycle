@@ -25,11 +25,11 @@ The tracks share one interface: [`data-contract.md`](data-contract.md).
 
 | Data | Web |
 |---|---|
-| Python environment — `requirements.txt` | Issues for every v1 task |
-| Data validation, 7 assets — `pipeline/check_data.py` | Sample data — `web/data/sample/*.json` |
-| Coverage and anomalies — `docs/data-notes.md` | App shell: layout, tabs, price chart — `web/index.html` |
+| Python environment — `requirements.txt` | Sample data — `web/data/sample/*.json` |
+| Data validation, 7 assets — `pipeline/check_data.py` | App shell: layout, tabs, price chart — `web/index.html` |
+| Coverage and anomalies — `docs/data-notes.md` | |
 
-**Exit gate:** Both PRs merged; dashboard renders sample data.
+**Exit gate:** Both tracks pushed to main; dashboard renders sample data.
 
 ## M2 · Cycle score
 **Handoff:** Data → Web: `summary.json`, `coin_*.json`.
@@ -67,7 +67,7 @@ The tracks share one interface: [`data-contract.md`](data-contract.md).
 ## M5 · Validation (Joint)
 - [ ] Results review across assets and horizons — `docs/results.md`
 - [ ] Manual spot-check: 3 dates per asset
-- [ ] Resolve issues found in review
+- [ ] Fix problems found in review
 
 **Exit gate:** Results documented; no open blocking bugs.
 
@@ -85,9 +85,9 @@ The tracks share one interface: [`data-contract.md`](data-contract.md).
 ## Conventions
 | | |
 |---|---|
-| Branches | `data/<topic>` · `web/<topic>` |
-| Merging | PR only · 1 approval from the other track · `main` protected |
-| Tracking | One issue per task · labels `data` `web` `M0`–`M6` · `Closes #n` in PR |
-| Interface | `docs/data-contract.md` · changes need both approvals |
-| Excluded | Secrets, API keys, `data/raw/` |
+| Commits | Prefix with track: `data: add indicators` · `web: history chart` |
+| Pushing | Direct push to `main` · `git pull` before `git push` · force push and branch deletion blocked |
+| Tracking | GitHub issues #1–#13 + Crypto Cycle Sprint page · `closes #n` in commit messages |
+| Interface | `docs/data-contract.md` · agree changes with your teammate first |
+| Excluded | Secrets, API keys, `.venv/` |
 | Cadence | Daily 10-min sync · milestone review at each gate |

@@ -4,21 +4,25 @@ BTC  -> blockchain.info charts API (price since 2010, hash rate, miner revenue)
 Alts -> Binance public market-data API (daily candles since listing)
 """
 import json
+import ssl
 import time
 import urllib.request
 from pathlib import Path
 
+import certifi
 import pandas as pd
 
 RAW_DIR = Path(__file__).resolve().parent.parent / "data" / "raw"
 HEADERS = {"User-Agent": "crypto-cycle/0.1"}
+# certifi's CA bundle: python.org builds on macOS ship without system certificates.
+SSL_CONTEXT = ssl.create_default_context(cafile=certifi.where())
 
 
 def get_json(url, retries=3):
     for attempt in range(retries):
         try:
             req = urllib.request.Request(url, headers=HEADERS)
-            with urllib.request.urlopen(req, timeout=60) as r:
+            with urllib.request.urlopen(req, timeout=60, context=SSL_CONTEXT) as r:
                 return json.load(r)
         except Exception:
             if attempt == retries - 1:
