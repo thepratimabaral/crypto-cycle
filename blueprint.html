@@ -1,0 +1,385 @@
+<title>Crypto Cycle Blueprint</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Public+Sans:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column with wide tables/diagrams in their own scroll boxes; a sticky contents rail on desktop. */
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --fg: #17202b;
+  --muted: #5b6676;
+  --line: #dde2e9;
+  --accent: #b5651d;      /* copper: a nod to bitcoin orange, toned down */
+  --accent-soft: #f6e8db;
+  --good: #2f7d4f;
+  --good-soft: #e1f1e7;
+  --wait: #6b7280;
+  --wait-soft: #eceef2;
+  --cap: #3b6fb6; --acc: #4f9bb0; --exp: #8a9a3c; --bull: #d08a2e; --eup: #c2452d;
+  --display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --body: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11161d; --surface: #182029; --fg: #e6eaf0; --muted: #9aa5b4; --line: #2a3441;
+  --accent: #e39a55; --accent-soft: #3a2a1c; --good: #6cc492; --good-soft: #1c3326;
+  --wait: #9aa3b0; --wait-soft: #232c37; color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --bg: #11161d; --surface: #182029; --fg: #e6eaf0; --muted: #9aa5b4; --line: #2a3441;
+  --accent: #e39a55; --accent-soft: #3a2a1c; --good: #6cc492; --good-soft: #1c3326;
+  --wait: #9aa3b0; --wait-soft: #232c37; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 16px/1.6 var(--body); padding-inline: 20px; padding-block: 40px 80px; }
+.wrap { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 48px; }
+nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; font-size: 13.5px; }
+nav.toc ol { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 6px; }
+nav.toc a { color: var(--muted); text-decoration: none; }
+nav.toc a:hover, nav.toc a:focus-visible { color: var(--accent); }
+main { min-width: 0; display: grid; gap: 56px; }
+@media (max-width: 860px) { .wrap { grid-template-columns: minmax(0, 1fr); } nav.toc { display: none; } }
+
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; line-height: 1.15; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 700; letter-spacing: -0.02em; }
+h2 { font-size: 1.6rem; font-weight: 700; }
+h3 { font-size: 1.1rem; font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+.eyebrow { font: 600 12px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+section { display: grid; gap: 18px; scroll-margin-top: 24px; }
+.lede { font-size: 1.15rem; color: var(--muted); }
+code, .mono { font-family: var(--mono); font-size: 0.88em; }
+code { background: var(--wait-soft); padding: 1px 5px; border-radius: 4px; }
+
+header.hero { display: grid; gap: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+.pillars { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.pillar { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 6px; align-content: start; }
+.pillar .q { font: 600 12px var(--mono); color: var(--muted); }
+
+.table-box { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 600 11.5px var(--mono); letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); background: var(--bg); white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td.num { font-variant-numeric: tabular-nums; font-family: var(--mono); font-size: 13px; white-space: nowrap; }
+.tag { display: inline-block; font: 600 11px var(--mono); padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.tag.val { background: var(--accent-soft); color: var(--accent); }
+.tag.trd { background: var(--good-soft); color: var(--good); }
+.tag.no { background: var(--wait-soft); color: var(--wait); }
+
+.diagram { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+
+.scale { display: grid; gap: 8px; }
+.scale-bar { display: grid; grid-template-columns: repeat(5, 1fr); border-radius: 8px; overflow: hidden; height: 14px; }
+.scale-bar span:nth-child(1) { background: var(--cap); } .scale-bar span:nth-child(2) { background: var(--acc); }
+.scale-bar span:nth-child(3) { background: var(--exp); } .scale-bar span:nth-child(4) { background: var(--bull); }
+.scale-bar span:nth-child(5) { background: var(--eup); }
+.scale-labels { display: grid; grid-template-columns: repeat(5, 1fr); font-size: 13px; gap: 4px; }
+.scale-labels b { display: block; font-family: var(--display); font-weight: 600; }
+.scale-labels span { color: var(--muted); font: 12px var(--mono); }
+
+.formula { font: 14px/1.7 var(--mono); background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 6px; padding: 14px 18px; overflow-x: auto; white-space: pre; }
+
+.steps { list-style: none; padding: 0; margin: 0; display: grid; gap: 0; counter-reset: step; }
+.steps li { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--line); align-items: start; }
+.steps li::before { counter-increment: step; content: counter(step, decimal-leading-zero); font: 600 14px var(--mono); color: var(--muted); padding-top: 2px; }
+.steps h3 { margin-bottom: 4px; }
+.steps p { color: var(--muted); font-size: 14.5px; }
+.status { font: 600 11px var(--mono); padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+.status.done { background: var(--good-soft); color: var(--good); }
+.status.next { background: var(--accent-soft); color: var(--accent); }
+.status.todo { background: var(--wait-soft); color: var(--wait); }
+@media (max-width: 520px) { .steps li { grid-template-columns: 32px minmax(0, 1fr); } .steps .status { grid-column: 2; justify-self: start; } }
+
+.tree { font: 13.5px/1.75 var(--mono); background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; overflow-x: auto; white-space: pre; }
+.tree .c { color: var(--muted); }
+
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.box { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 10px; align-content: start; }
+.box ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 14.5px; }
+.note { font-size: 14px; color: var(--muted); }
+a { color: var(--accent); }
+</style>
+
+<div class="wrap">
+  <nav class="toc" aria-label="Contents">
+    <div class="eyebrow">Contents</div>
+    <ol>
+      <li><a href="#goal">What we're building</a></li>
+      <li><a href="#architecture">How it fits together</a></li>
+      <li><a href="#stack">Tech stack</a></li>
+      <li><a href="#data">Data sources</a></li>
+      <li><a href="#indicators">Indicators</a></li>
+      <li><a href="#score">Cycle score</a></li>
+      <li><a href="#prediction">Prediction</a></li>
+      <li><a href="#proof">Does it work?</a></li>
+      <li><a href="#dashboard">Dashboard screens</a></li>
+      <li><a href="#steps">Build steps</a></li>
+      <li><a href="#files">Project files</a></li>
+      <li><a href="#limits">Limits &amp; risks</a></li>
+      <li><a href="#later">After v1</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <div class="eyebrow">Project plan · v1 · October 2026</div>
+      <h1>Crypto Cycle: full history, a cycle score, and predictions we can check</h1>
+      <p class="lede">A web dashboard for BTC and the top coins. It shows each coin's complete price history, a 0–100 cycle score like KŌINI's, a forecast for 30, 90 and 365 days, and a public record of whether those forecasts came true.</p>
+    </header>
+
+    <section id="goal">
+      <div class="eyebrow">01 · Goal</div>
+      <h2>What we're building</h2>
+      <div class="pillars">
+        <div class="pillar"><span class="q">"What has BTC done?"</span><h3>Whole history</h3><p>Daily price since July 2010 for BTC, and since each coin was listed for the others, on a log chart with the cycle score underneath.</p></div>
+        <div class="pillar"><span class="q">"Where are we now?"</span><h3>Cycle score + forecast</h3><p>One 0–100 score built from valuation and trend indicators, plus the chance that the price is higher in 30, 90 and 365 days.</p></div>
+        <div class="pillar"><span class="q">"Can I trust it?"</span><h3>Proof</h3><p>A backtest over every past day, a comparison against simple baseline rules, and a live log of predictions that get scored automatically when they come due.</p></div>
+      </div>
+      <p class="note">Coins in v1: BTC, ETH, BNB, SOL, XRP, ADA, DOGE.</p>
+    </section>
+
+    <section id="architecture">
+      <div class="eyebrow">02 · Architecture</div>
+      <h2>How it fits together</h2>
+      <p>A Python pipeline runs once a day. It downloads data, calculates everything, and writes plain JSON files. The website is static: it only reads those files. There's no server or database to run, so hosting is free.</p>
+      <div class="diagram">
+<pre class="mermaid">
+flowchart LR
+  subgraph S[Free public APIs]
+    A[blockchain.info<br/>BTC price, hash rate,<br/>miner revenue]
+    B[Binance data API<br/>ETH BNB SOL XRP ADA DOGE]
+    C[alternative.me<br/>Fear &amp; Greed]
+  end
+  subgraph P[Python pipeline · runs daily]
+    F[fetch.py<br/>download + cache]
+    M[model.py<br/>indicators → score<br/>→ predictions → backtest]
+    R[run.py<br/>write JSON + update<br/>prediction log]
+  end
+  subgraph W[Static website]
+    J[(web/data/*.json)]
+    D[Dashboard<br/>HTML + JS + charts]
+  end
+  A --> F
+  B --> F
+  C --> F
+  F --> M --> R --> J --> D
+  R -. git commit .-> G[(Git history =<br/>tamper-proof log)]
+</pre>
+      </div>
+    </section>
+
+    <section id="stack">
+      <div class="eyebrow">03 · Stack</div>
+      <h2>What we're using</h2>
+      <div class="table-box"><table>
+        <thead><tr><th>Layer</th><th>Choice</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>Data pipeline</td><td>Python 3 + pandas + numpy</td><td>Already installed on your Mac. Built for time-series math like moving averages and percentiles.</td></tr>
+          <tr><td>HTTP</td><td>Python standard library (<code>urllib</code>)</td><td>No extra packages to install.</td></tr>
+          <tr><td>Storage</td><td>CSV cache + JSON output files</td><td>Simple and readable. A database isn't needed at this size (about 6,000 rows per coin).</td></tr>
+          <tr><td>Website</td><td>Plain HTML, CSS and JavaScript</td><td>No build step and no framework to learn. It opens in any browser.</td></tr>
+          <tr><td>Charts</td><td>TradingView Lightweight Charts (free, open source)</td><td>Fast with 15 years of daily data. Supports log scale, zoom and pan.</td></tr>
+          <tr><td>Daily schedule</td><td>GitHub Actions cron (or a Mac cron job to start)</td><td>Runs the pipeline every day for free.</td></tr>
+          <tr><td>Hosting</td><td>GitHub Pages or Cloudflare Pages</td><td>Free hosting for static sites.</td></tr>
+          <tr><td>Proof of honesty</td><td>Git commits of the prediction log</td><td>Each day's predictions are timestamped publicly, so nobody can edit them afterwards.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="data">
+      <div class="eyebrow">04 · Data</div>
+      <h2>Data sources (all free, no API key)</h2>
+      <div class="table-box"><table>
+        <thead><tr><th>Source</th><th>What we take</th><th>History from</th><th>Used for</th></tr></thead>
+        <tbody>
+          <tr><td>blockchain.info charts API</td><td>BTC daily price</td><td class="num">Jul 2010</td><td>All BTC indicators</td></tr>
+          <tr><td>blockchain.info charts API</td><td>BTC hash rate</td><td class="num">Jan 2009</td><td>Hash Ribbons</td></tr>
+          <tr><td>blockchain.info charts API</td><td>Miner revenue (USD)</td><td class="num">Jan 2009</td><td>Puell Multiple</td></tr>
+          <tr><td>Binance public data API</td><td>Daily close + volume: ETH</td><td class="num">Aug 2017</td><td>Price indicators</td></tr>
+          <tr><td>Binance public data API</td><td>BNB · ADA · XRP</td><td class="num">Nov 2017 · Apr 2018 · May 2018</td><td>Price indicators</td></tr>
+          <tr><td>Binance public data API</td><td>DOGE · SOL</td><td class="num">Jul 2019 · Aug 2020</td><td>Price indicators</td></tr>
+          <tr><td>alternative.me</td><td>Fear &amp; Greed Index</td><td class="num">Feb 2018</td><td>Shown on the dashboard only (too short to include in the score)</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">Tested and rejected: CoinGecko (the free tier now gives only 365 days of history) and CryptoCompare (now requires an API key). Binance prices are in USDT, which tracks USD closely. If an API is down, the pipeline uses the last cached copy.</p>
+    </section>
+
+    <section id="indicators">
+      <div class="eyebrow">05 · Indicators</div>
+      <h2>What goes into the score</h2>
+      <p>The indicators fall into two groups, like KŌINI. <b>Valuation</b> asks whether the price is cheap or expensive compared with its own history. <b>Trend</b> asks which way the market is moving and how strongly.</p>
+      <div class="table-box"><table>
+        <thead><tr><th>Indicator</th><th>Group</th><th>How it's calculated</th><th>Coins</th></tr></thead>
+        <tbody>
+          <tr><td>Mayer Multiple</td><td><span class="tag val">Valuation</span></td><td>price ÷ 200-day average</td><td>All</td></tr>
+          <tr><td>200-Week MA ratio</td><td><span class="tag val">Valuation</span></td><td>price ÷ 1,400-day average</td><td>All (needs about 4 years of data)</td></tr>
+          <tr><td>Distance from all-time high</td><td><span class="tag val">Valuation</span></td><td>price ÷ highest price so far</td><td>All</td></tr>
+          <tr><td>Puell Multiple</td><td><span class="tag val">Valuation</span></td><td>daily miner revenue ÷ its 365-day average</td><td>BTC only</td></tr>
+          <tr><td>Golden Cross spread</td><td><span class="tag trd">Trend</span></td><td>50-day average ÷ 200-day average − 1</td><td>All</td></tr>
+          <tr><td>90-day momentum</td><td><span class="tag trd">Trend</span></td><td>price ÷ price 90 days ago − 1</td><td>All</td></tr>
+          <tr><td>RSI (30-day)</td><td><span class="tag trd">Trend</span></td><td>Relative strength of up days vs down days, 0–100</td><td>All</td></tr>
+          <tr><td>Hash Ribbons</td><td><span class="tag trd">Trend</span></td><td>30-day hash-rate average ÷ 60-day average − 1</td><td>BTC only</td></tr>
+          <tr><td>Fear &amp; Greed</td><td><span class="tag no">Display</span></td><td>Shown next to the score but not counted in it</td><td>Market-wide</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="score">
+      <div class="eyebrow">06 · Scoring</div>
+      <h2>Turning indicators into one 0–100 score</h2>
+      <p>Raw indicators use different units (a ratio, a %, an RSI). So each day, every raw value is converted to a <b>percentile against that coin's own past</b>: 0 means the lowest reading ever up to that day, and 100 means the highest. It only compares with past days, never future ones. That rule is what makes the backtest fair.</p>
+<div class="formula">indicator score = percentile of today's value among all values up to today   (needs 365 days first)
+valuation       = average of valuation indicator scores   (needs at least 2)
+trend           = average of trend indicator scores       (needs at least 2)
+cycle score     = (valuation + trend) ÷ 2</div>
+      <div class="scale">
+        <div class="scale-bar" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+        <div class="scale-labels">
+          <div><b>Capitulation</b><span>0–20</span></div>
+          <div><b>Accumulation</b><span>20–40</span></div>
+          <div><b>Early Expansion</b><span>40–60</span></div>
+          <div><b>Mid Bull</b><span>60–80</span></div>
+          <div><b>Euphoria</b><span>80–100</span></div>
+        </div>
+      </div>
+      <p class="note">Like KŌINI, we'll flag days when valuation and trend disagree by more than 25 points.</p>
+    </section>
+
+    <section id="prediction">
+      <div class="eyebrow">07 · Prediction</div>
+      <h2>How a prediction is made</h2>
+      <p>For each horizon (30, 90 and 365 days) we ask: <b>on past days with a similar score, how often was the price higher afterwards?</b></p>
+<div class="formula">1. Put today's score into a bucket of 10 points (e.g. 58 → bucket 50–60).
+2. Take every past day in that bucket whose outcome is already known.
+3. Count how often the price was higher after N days.
+4. Pull that rate toward the overall up-rate (20 pseudo-days), so small buckets don't over-claim.
+   P(up) = (ups in bucket + 20 × overall up-rate) ÷ (days in bucket + 20)</div>
+      <p>Example of what the dashboard will show (numbers made up): <i>"BTC score 58. Higher in 90 days: <b>64%</b>, based on 1,240 similar past days. Median 90-day return on those days: +18%."</i></p>
+      <p class="note">This method is easy to explain and hard to overfit. Fancier models such as machine learning can be added later, but only if they beat this one in the same backtest.</p>
+    </section>
+
+    <section id="proof">
+      <div class="eyebrow">08 · Validation</div>
+      <h2>How we find out if it works</h2>
+      <div class="two">
+        <div class="box">
+          <h3>Walk-forward backtest</h3>
+          <ul>
+            <li>Replay history one day at a time.</li>
+            <li>Each day's prediction uses only data that was available on that day.</li>
+            <li>Score every prediction against what really happened.</li>
+            <li>BTC gives us about 13 years of test days. Newer coins give fewer.</li>
+          </ul>
+        </div>
+        <div class="box">
+          <h3>Baselines it must beat</h3>
+          <ul>
+            <li><b>Coin flip:</b> always 50%.</li>
+            <li><b>Always up:</b> the overall up-rate so far. Hard to beat for BTC.</li>
+            <li><b>200-day rule:</b> up if price is above its 200-day average.</li>
+            <li><b>Valuation only</b> and <b>Trend only:</b> shows which half does the work.</li>
+          </ul>
+        </div>
+        <div class="box">
+          <h3>Live prediction log</h3>
+          <ul>
+            <li>Every daily run saves that day's predictions. They're never edited afterwards.</li>
+            <li>When a prediction's date arrives, it is scored automatically as ✓ or ✗.</li>
+            <li>The log is committed to git, so the timestamps can be checked.</li>
+            <li>It starts empty. The first 30-day results arrive 30 days after launch.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="table-box"><table>
+        <thead><tr><th>Metric</th><th>What it means</th><th>Good result</th></tr></thead>
+        <tbody>
+          <tr><td>Hit rate</td><td>How often the up/down call was right</td><td>Higher than the "always up" baseline</td></tr>
+          <tr><td>Brier score</td><td>Error of the % itself (0 is perfect, 0.25 is a coin flip)</td><td>Lower than the baselines</td></tr>
+          <tr><td>Brier skill</td><td>% improvement over "always up"</td><td>Above 0%</td></tr>
+          <tr><td>Calibration</td><td>When it says 70%, does it happen about 70% of the time?</td><td>Points close to the diagonal</td></tr>
+          <tr><td>Return spread</td><td>Average return after "up" calls minus after "down" calls</td><td>Clearly positive</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">Honest caveat for the dashboard: consecutive days share most of their future window, so 4,000 test days of 365-day predictions are really only about 11 independent years.</p>
+    </section>
+
+    <section id="dashboard">
+      <div class="eyebrow">09 · Website</div>
+      <h2>Dashboard screens</h2>
+      <div class="table-box"><table>
+        <thead><tr><th>Section</th><th>Shows</th></tr></thead>
+        <tbody>
+          <tr><td>Coin tabs</td><td>BTC · ETH · BNB · SOL · XRP · ADA · DOGE</td></tr>
+          <tr><td>Today</td><td>Cycle score, regime, valuation vs trend, 1-day and 7-day change, Fear &amp; Greed</td></tr>
+          <tr><td>Forecast cards</td><td>P(higher) for 30 / 90 / 365 days, sample size, median past return, confidence</td></tr>
+          <tr><td>History chart</td><td>Full price on a log scale, with the cycle score below on a synced timeline</td></tr>
+          <tr><td>Indicators</td><td>Each indicator's raw value, 0–100 score and a plain-English line</td></tr>
+          <tr><td>Track record</td><td>Backtest table (model vs baselines), calibration, results by score bucket</td></tr>
+          <tr><td>Live log</td><td>Every saved prediction, its status (pending/✓/✗) and the running hit rate</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="steps">
+      <div class="eyebrow">10 · Plan</div>
+      <h2>Build steps</h2>
+      <ol class="steps">
+        <li><div><h3>Test data sources</h3><p>Checked which free APIs work and how far back each one goes.</p></div><span class="status done">Done</span></li>
+        <li><div><h3>Data downloader</h3><p><code>pipeline/fetch.py</code>: full history per coin, with a cache and fallback if an API fails.</p></div><span class="status done">Done</span></li>
+        <li><div><h3>Indicators + cycle score</h3><p><code>pipeline/model.py</code>: the 8 indicators, percentile scoring, and valuation/trend/composite.</p></div><span class="status next">Next</span></li>
+        <li><div><h3>Predictions + backtest</h3><p>Walk-forward P(up) for 3 horizons, the baselines, the metrics and the calibration.</p></div><span class="status todo">To do</span></li>
+        <li><div><h3>Live prediction log</h3><p><code>pipeline/run.py</code>: save today's predictions (append only) and score the ones that have come due.</p></div><span class="status todo">To do</span></li>
+        <li><div><h3>Dashboard</h3><p><code>web/index.html</code>: the screens above, reading the JSON files.</p></div><span class="status todo">To do</span></li>
+        <li><div><h3>Run &amp; review results</h3><p>Run on all 7 coins and check that the numbers make sense. We report honestly if the score doesn't beat the baselines.</p></div><span class="status todo">To do</span></li>
+        <li><div><h3>Daily automation</h3><p>Cron job or GitHub Actions: run the pipeline each day and commit the log.</p></div><span class="status todo">To do</span></li>
+        <li><div><h3>Put it online</h3><p>Deploy to GitHub Pages or Cloudflare Pages. Needs your approval and account.</p></div><span class="status todo">Later</span></li>
+      </ol>
+    </section>
+
+    <section id="files">
+      <div class="eyebrow">11 · Code</div>
+      <h2>Project files</h2>
+<div class="tree">crypto-cycle/                     <span class="c">on your Desktop</span>
+├── pipeline/
+│   ├── fetch.py                  <span class="c">download history (done)</span>
+│   ├── model.py                  <span class="c">indicators, score, predictions, backtest</span>
+│   └── run.py                    <span class="c">daily entry point: python3 -m pipeline.run</span>
+├── data/raw/*.csv                <span class="c">cached downloads</span>
+├── web/
+│   ├── index.html                <span class="c">the dashboard</span>
+│   └── data/
+│       ├── summary.json          <span class="c">all coins, current state + backtest</span>
+│       ├── coin_BTC.json …       <span class="c">full timeline per coin</span>
+│       └── predictions_log.json  <span class="c">live, append-only track record</span>
+├── blueprint.html                <span class="c">this page</span>
+└── README.md</div>
+    </section>
+
+    <section id="limits">
+      <div class="eyebrow">12 · Risks</div>
+      <h2>Limits &amp; risks</h2>
+      <div class="two">
+        <div class="box"><h3>Few cycles</h3><p class="note">BTC has had only about 4 full bull/bear cycles. Any cycle model learns from a small sample, so results can look better than they really are.</p></div>
+        <div class="box"><h3>Short alt histories</h3><p class="note">SOL and DOGE have only a few years of data, so their forecasts get lower confidence labels.</p></div>
+        <div class="box"><h3>Free API changes</h3><p class="note">Free APIs can add limits at any time, as CoinGecko and CryptoCompare already have. The cache keeps the site running, and sources can be swapped.</p></div>
+        <div class="box"><h3>Not financial advice</h3><p class="note">The site shows probabilities from history, not guarantees. The disclaimer appears on every page.</p></div>
+      </div>
+    </section>
+
+    <section id="later">
+      <div class="eyebrow">13 · Roadmap</div>
+      <h2>After v1</h2>
+      <div class="table-box"><table>
+        <thead><tr><th>Idea</th><th>What it adds</th></tr></thead>
+        <tbody>
+          <tr><td>On-chain valuation</td><td>MVRV Z-Score and realized price (BGeometrics free API, 7-day delay)</td></tr>
+          <tr><td>Machine-learning model</td><td>Gradient boosting on the same indicators. Kept only if it beats the bucket model.</td></tr>
+          <tr><td>Alerts</td><td>Email or Telegram when the regime changes</td></tr>
+          <tr><td>Mobile app</td><td>The same JSON files can power an iOS/Android app</td></tr>
+          <tr><td>More coins</td><td>Any coin listed on Binance can be added in one line</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+  </main>
+</div>

@@ -1,0 +1,384 @@
+<title>Crypto Cycle Sprint</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: compact header with team + progress; milestones as stacked rows (meta column | Data track | Web track), joint work spanning both tracks; repo conventions at the end. */
+:root {
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --fg: #151c26;
+  --muted: #5e6877;
+  --line: #e0e4ea;
+  --data: #a85d1a;
+  --data-soft: #f5e9de;
+  --web: #1b7184;
+  --web-soft: #dff0f3;
+  --joint: #4f5596;
+  --joint-soft: #eaebf6;
+  --good: #2c7a4b;
+  --code-bg: #eef1f5;
+  --display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --body: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #10151c; --surface: #171f28; --fg: #e5e9ef; --muted: #96a1b0; --line: #29323e;
+  --data: #e29a56; --data-soft: #36281b; --web: #5bc0d2; --web-soft: #143138;
+  --joint: #a6abed; --joint-soft: #252945; --good: #6cc492; --code-bg: #0c1117; color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --bg: #10151c; --surface: #171f28; --fg: #e5e9ef; --muted: #96a1b0; --line: #29323e;
+  --data: #e29a56; --data-soft: #36281b; --web: #5bc0d2; --web-soft: #143138;
+  --joint: #a6abed; --joint-soft: #252945; --good: #6cc492; --code-bg: #0c1117; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 14.5px/1.5 var(--body); padding-inline: 20px; padding-block: 32px 72px; }
+.wrap { max-width: 1200px; margin: 0 auto; display: grid; gap: 40px; }
+h1, h2, h3 { font-family: var(--display); line-height: 1.15; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(1.7rem, 3.6vw, 2.3rem); font-weight: 700; letter-spacing: -0.015em; }
+h2 { font-size: 1.25rem; font-weight: 700; }
+p { margin: 0; }
+.label { font: 600 11px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+code { font-family: var(--mono); font-size: 0.88em; }
+
+/* Header */
+.top { display: grid; gap: 20px; }
+.title-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 16px; }
+.scope { color: var(--muted); max-width: 64ch; margin-top: 8px; }
+.overall { text-align: right; }
+.overall .pct { font: 700 2rem/1 var(--display); font-variant-numeric: tabular-nums; }
+.overall .sub { font: 12px var(--mono); color: var(--muted); }
+.team { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 760px) { .team { grid-template-columns: minmax(0, 1fr); } .overall { text-align: left; } }
+.member { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: grid; gap: 8px; }
+.member .head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.member .role { font: 600 11px var(--mono); letter-spacing: 0.06em; text-transform: uppercase; }
+.member.data .role { color: var(--data); } .member.web .role { color: var(--web); } .member.joint .role { color: var(--joint); }
+.member input, .member .static { font: 600 1rem var(--body); color: var(--fg); background: transparent; border: 0; border-bottom: 1px dashed var(--line); padding: 2px 0; width: 100%; }
+.member .static { border-bottom-color: transparent; }
+.member input:focus-visible { outline: none; border-bottom-color: var(--fg); }
+.member input:disabled { border-bottom-color: transparent; }
+.count { font: 600 12px var(--mono); font-variant-numeric: tabular-nums; color: var(--muted); }
+.bar { height: 6px; background: var(--code-bg); border-radius: 99px; overflow: hidden; }
+.bar span { display: block; height: 100%; width: 0; transition: width .3s; }
+.member.data .bar span { background: var(--data); } .member.web .bar span { background: var(--web); } .member.joint .bar span { background: var(--joint); }
+.sync { font: 12px var(--mono); color: var(--muted); }
+
+/* Milestone rail */
+.rail { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.rail a { text-decoration: none; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; display: grid; gap: 4px; min-width: 0; }
+.rail a:hover, .rail a:focus-visible { border-color: var(--fg); outline: none; }
+.rail .id { font: 600 11px var(--mono); color: var(--muted); }
+.rail .nm { font-size: 12.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rail .mini { height: 3px; background: var(--code-bg); border-radius: 99px; overflow: hidden; }
+.rail .mini span { display: block; height: 100%; background: var(--good); width: 0; }
+.rail a.complete { border-color: var(--good); }
+@media (max-width: 760px) { .rail { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+/* Milestones */
+.ms-list { display: grid; gap: 14px; }
+.ms { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; display: grid; grid-template-columns: 240px minmax(0, 1fr) minmax(0, 1fr); overflow: hidden; scroll-margin-top: 16px; }
+@media (max-width: 960px) { .ms { grid-template-columns: minmax(0, 1fr); } }
+.meta { padding: 16px; border-right: 1px solid var(--line); display: grid; gap: 12px; align-content: start; background: var(--bg); }
+@media (max-width: 960px) { .meta { border-right: 0; border-bottom: 1px solid var(--line); } }
+.meta .id { font: 600 12px var(--mono); color: var(--muted); }
+.meta h2 { margin-top: 2px; }
+.meta dl { margin: 0; display: grid; gap: 8px; font-size: 13px; }
+.meta dt { font: 600 10.5px var(--mono); letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); }
+.meta dd { margin: 2px 0 0; }
+.meta .state { justify-self: start; font: 600 11px var(--mono); padding: 3px 9px; border-radius: 99px; background: var(--code-bg); color: var(--muted); }
+.meta .state.done { background: var(--good); color: var(--surface); }
+.track { min-width: 0; display: grid; align-content: start; }
+.track + .track { border-left: 1px solid var(--line); }
+@media (max-width: 960px) { .track + .track { border-left: 0; border-top: 1px solid var(--line); } }
+.track-h { padding: 10px 16px; font: 600 11px var(--mono); letter-spacing: 0.06em; text-transform: uppercase; border-bottom: 1px solid var(--line); }
+.track.data .track-h { color: var(--data); background: var(--data-soft); }
+.track.web .track-h { color: var(--web); background: var(--web-soft); }
+.track.joint { grid-column: 2 / -1; }
+.track.joint .track-h { color: var(--joint); background: var(--joint-soft); }
+@media (max-width: 960px) { .track.joint { grid-column: auto; } }
+.ms .joint-row { grid-column: 2 / -1; border-top: 1px solid var(--line); }
+@media (max-width: 960px) { .ms .joint-row { grid-column: auto; } }
+ul.tasks { list-style: none; margin: 0; padding: 0; }
+ul.tasks li + li { border-top: 1px solid var(--line); }
+.task { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 10px; padding: 10px 16px; cursor: pointer; align-items: start; }
+.task input { width: 16px; height: 16px; margin: 2px 0 0; accent-color: var(--good); cursor: pointer; }
+.task input:disabled { cursor: default; }
+.task .t { font-weight: 500; }
+.task .out { font: 12px var(--mono); color: var(--muted); margin-top: 2px; overflow-wrap: anywhere; }
+.task .by { font: 11px var(--mono); color: var(--good); margin-top: 3px; }
+.task.done .t { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--muted); }
+.task:focus-within { outline: 2px solid var(--fg); outline-offset: -2px; }
+
+/* Repo */
+.repo { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+@media (max-width: 960px) { .repo { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; min-width: 0; }
+.panel > .label { padding: 12px 16px; border-bottom: 1px solid var(--line); display: block; }
+.code { position: relative; background: var(--code-bg); }
+.code pre { margin: 0; padding: 14px 16px; padding-right: 76px; overflow-x: auto; font: 12.5px/1.7 var(--mono); }
+.code .c { color: var(--muted); }
+.copy { position: absolute; top: 10px; right: 10px; font: 600 11px var(--mono); padding: 4px 9px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
+.copy:hover, .copy:focus-visible { border-color: var(--fg); }
+table.conv { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+table.conv th, table.conv td { text-align: left; padding: 9px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.conv tr:last-child th, table.conv tr:last-child td { border-bottom: 0; }
+table.conv th { width: 34%; font-weight: 600; white-space: nowrap; }
+table.conv td code { color: var(--muted); }
+.foot { font: 12px var(--mono); color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .bar span, .rail .mini span { transition: none; } }
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div class="title-row">
+      <div>
+        <div class="label">Crypto Cycle · Version 1 delivery plan</div>
+        <h1 style="margin-top:8px">Version 1 build plan</h1>
+        <p class="scope">Scope: full price history, cycle score, 30/90/365-day forecasts, walk-forward backtest against baselines, live prediction log, and a public dashboard for BTC, ETH, BNB, SOL, XRP, ADA and DOGE.</p>
+      </div>
+      <div class="overall"><div class="pct" id="overall-pct">0%</div><div class="sub" id="overall-sub">0 of 0 tasks</div></div>
+    </div>
+    <div class="team">
+      <div class="member data">
+        <div class="head"><label class="role" for="name-data">Data track</label><span class="count" id="count-data">0/0</span></div>
+        <input id="name-data" placeholder="Assign owner" maxlength="40" autocomplete="off">
+        <div class="bar"><span id="bar-data"></span></div>
+      </div>
+      <div class="member web">
+        <div class="head"><label class="role" for="name-web">Web track</label><span class="count" id="count-web">0/0</span></div>
+        <input id="name-web" placeholder="Assign owner" maxlength="40" autocomplete="off">
+        <div class="bar"><span id="bar-web"></span></div>
+      </div>
+      <div class="member joint">
+        <div class="head"><span class="role">Joint</span><span class="count" id="count-joint">0/0</span></div>
+        <div class="static">Both owners</div>
+        <div class="bar"><span id="bar-joint"></span></div>
+      </div>
+    </div>
+    <nav class="rail" id="rail" aria-label="Milestones"></nav>
+    <div class="sync" id="sync">Connecting…</div>
+  </div>
+
+  <div class="ms-list" id="milestones"></div>
+
+  <section class="repo" id="repo">
+    <div class="panel">
+      <span class="label">Repository setup · Web track</span>
+      <div class="code"><button class="copy" type="button">Copy</button><pre><span class="c"># once per machine (both)</span>
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+
+<span class="c"># create an empty private repo at github.com/new (no README), then:</span>
+cd ~/Desktop/crypto-cycle
+git init -b main
+git add .
+git commit -m "Initial plan, data contract and fetcher"
+git remote add origin https://github.com/OWNER/crypto-cycle.git
+git push -u origin main</pre></div>
+    </div>
+    <div class="panel">
+      <span class="label">Conventions</span>
+      <table class="conv"><tbody>
+        <tr><th>Branches</th><td><code>data/&lt;topic&gt;</code> · <code>web/&lt;topic&gt;</code></td></tr>
+        <tr><th>Merging</th><td>PR only · 1 approval from the other track · <code>main</code> protected</td></tr>
+        <tr><th>Tracking</th><td>One issue per task · labels <code>data</code> <code>web</code> <code>M0</code>–<code>M6</code> · <code>Closes #n</code> in PR</td></tr>
+        <tr><th>Interface</th><td><code>docs/data-contract.md</code> · changes need both approvals</td></tr>
+        <tr><th>Excluded</th><td>Secrets, API keys, <code>data/raw/</code></td></tr>
+        <tr><th>Cadence</th><td>Daily 10-min sync · milestone review at each gate</td></tr>
+      </tbody></table>
+    </div>
+  </section>
+
+  <p class="foot">Source of truth in repo: docs/PLAN.md · Design &amp; method: Crypto Cycle Blueprint</p>
+</div>
+
+<script>
+const MILESTONES = [
+  { id: "M0", name: "Kickoff", gate: "Both owners have cloned the repo; data contract approved.",
+    joint: [
+      { id: "m0-repo", t: "Create repository, push initial commit, add collaborator", out: "github.com/OWNER/crypto-cycle" },
+      { id: "m0-protect", t: "Protect main, create labels and project board", out: "Settings → Branches · Projects" },
+      { id: "m0-contract", t: "Review and approve data contract", out: "docs/data-contract.md" }
+    ] },
+  { id: "M1", name: "Foundations", gate: "Both PRs merged; dashboard renders sample data.",
+    handoff: "Web builds against sample data until M2.",
+    data: [
+      { id: "m1-env", t: "Python environment and dependencies", out: "requirements.txt · .venv" },
+      { id: "m1-check", t: "Data validation for all 7 assets", out: "pipeline/check_data.py" },
+      { id: "m1-notes", t: "Source coverage, gaps and anomalies", out: "docs/data-notes.md" }
+    ],
+    web: [
+      { id: "m1-issues", t: "Issues for every v1 task", out: "GitHub Issues · labels M0–M6" },
+      { id: "m1-sample", t: "Contract-conformant sample data", out: "web/data/sample/*.json" },
+      { id: "m1-shell", t: "App shell: layout, asset tabs, price chart", out: "web/index.html" }
+    ] },
+  { id: "M2", name: "Cycle score", gate: "Dashboard shows real scores and full history for all 7 assets.",
+    handoff: "Data → Web: summary.json and coin_*.json.",
+    data: [
+      { id: "m2-ind", t: "8 indicators (valuation + trend)", out: "pipeline/model.py" },
+      { id: "m2-rank", t: "Expanding-percentile scoring with no-lookahead test", out: "tests/test_model.py" },
+      { id: "m2-score", t: "Composite score, regimes, JSON export", out: "pipeline/run.py → web/data/" }
+    ],
+    web: [
+      { id: "m2-now", t: "Current-state panel: score, regime, sub-scores, Fear & Greed", out: "web/" },
+      { id: "m2-ind-ui", t: "Indicator table", out: "web/" },
+      { id: "m2-chart", t: "History chart: log price + synced score pane", out: "web/" },
+      { id: "m2-live", t: "Switch from sample to pipeline output", out: "web/data/" }
+    ] },
+  { id: "M3", name: "Forecast & backtest", gate: "Backtest results visible for all assets at all three horizons.",
+    handoff: "Data → Web: predictions, backtest, buckets in coin_*.json.",
+    data: [
+      { id: "m3-wf", t: "Walk-forward P(up) at 30 / 90 / 365 days", out: "pipeline/model.py" },
+      { id: "m3-base", t: "Baselines: coin flip, base rate, 200-DMA, valuation-only, trend-only", out: "pipeline/model.py" },
+      { id: "m3-metrics", t: "Hit rate, Brier, skill, calibration, bucket table", out: "pipeline/model.py" }
+    ],
+    web: [
+      { id: "m3-cards", t: "Forecast cards", out: "web/" },
+      { id: "m3-bt", t: "Model vs baseline table", out: "web/" },
+      { id: "m3-cal", t: "Calibration chart and bucket table", out: "web/" }
+    ] },
+  { id: "M4", name: "Live tracking", gate: "Scheduled workflow green; first log entries committed.",
+    handoff: "Data → Web: predictions_log.json.",
+    data: [
+      { id: "m4-log", t: "Append-only prediction log with resolver", out: "web/data/predictions_log.json" },
+      { id: "m4-test", t: "Immutability test for past entries", out: "tests/test_log.py" }
+    ],
+    web: [
+      { id: "m4-ui", t: "Prediction log view with running hit rate", out: "web/" },
+      { id: "m4-ci", t: "Daily workflow: run pipeline, commit data", out: ".github/workflows/daily.yml" }
+    ] },
+  { id: "M5", name: "Validation", gate: "Results documented; no open blocking bugs.",
+    joint: [
+      { id: "m5-review", t: "Results review across assets and horizons", out: "docs/results.md" },
+      { id: "m5-spot", t: "Manual spot-check: 3 dates per asset", out: "docs/results.md" },
+      { id: "m5-fix", t: "Resolve issues found in review", out: "GitHub Issues" }
+    ] },
+  { id: "M6", name: "Release", gate: "v1.0 tagged and live.",
+    data: [ { id: "m6-docs", t: "README and methodology copy", out: "README.md · web/" } ],
+    web: [ { id: "m6-deploy", t: "Deploy to GitHub Pages; mobile QA", out: "Settings → Pages" } ],
+    joint: [ { id: "m6-tag", t: "Release review and v1.0 tag", out: "git tag v1.0" } ] }
+];
+
+const ALL = [];
+for (const m of MILESTONES) for (const lane of ["data", "web", "joint"]) (m[lane] || []).forEach(x => ALL.push({ ...x, lane, ms: m.id }));
+
+let state = {}, names = { data: "", web: "" };
+let db = null, user = null, canWrite = false;
+const profileNames = {};
+
+const esc = s => { const d = document.createElement("div"); d.textContent = s ?? ""; return d.innerHTML; };
+
+function taskHTML(x) {
+  const s = state[x.id] || {};
+  const who = s.done && s.by ? profileNames[s.by] : "";
+  return `<li><label class="task${s.done ? " done" : ""}" for="cb-${x.id}">
+    <input type="checkbox" id="cb-${x.id}" data-id="${x.id}" ${s.done ? "checked" : ""} ${canWrite ? "" : "disabled"}>
+    <div><div class="t">${esc(x.t)}</div><div class="out">${esc(x.out)}</div>
+    ${s.done ? `<div class="by">Done${who ? " · " + esc(who) : ""}${s.at ? " · " + s.at.slice(0, 10) : ""}</div>` : ""}</div></label></li>`;
+}
+const ownerOf = lane => esc(names[lane] || "Unassigned");
+
+function track(lane, items, extraClass = "") {
+  const title = lane === "data" ? `Data · ${ownerOf("data")}` : lane === "web" ? `Web · ${ownerOf("web")}` : "Joint";
+  return `<div class="track ${lane} ${extraClass}"><div class="track-h">${title}</div><ul class="tasks">${items.map(taskHTML).join("")}</ul></div>`;
+}
+
+function render() {
+  const msDone = id => { const t = ALL.filter(x => x.ms === id); return [t.filter(x => state[x.id]?.done).length, t.length]; };
+
+  document.getElementById("rail").innerHTML = MILESTONES.map(m => {
+    const [d, n] = msDone(m.id);
+    return `<a href="#${m.id}" class="${d === n ? "complete" : ""}"><span class="id">${m.id} · ${d}/${n}</span><span class="nm">${esc(m.name)}</span><span class="mini"><span style="width:${100 * d / n}%"></span></span></a>`;
+  }).join("");
+
+  document.getElementById("milestones").innerHTML = MILESTONES.map(m => {
+    const [d, n] = msDone(m.id);
+    const meta = `<div class="meta"><div><div class="id">${m.id}</div><h2>${esc(m.name)}</h2></div>
+      <dl><div><dt>Exit gate</dt><dd>${esc(m.gate)}</dd></div>${m.handoff ? `<div><dt>Handoff</dt><dd>${esc(m.handoff)}</dd></div>` : ""}</dl>
+      <span class="state${d === n ? " done" : ""}">${d === n ? "Complete" : `${d} / ${n}`}</span></div>`;
+    let body;
+    if (m.data) {
+      body = track("data", m.data) + track("web", m.web) + (m.joint ? `<div class="joint-row">${track("joint", m.joint)}</div>` : "");
+    } else {
+      body = track("joint", m.joint);
+    }
+    return `<article class="ms" id="${m.id}">${meta}${body}</article>`;
+  }).join("");
+
+  const counts = lane => { const t = ALL.filter(x => x.lane === lane); return [t.filter(x => state[x.id]?.done).length, t.length]; };
+  for (const lane of ["data", "web", "joint"]) {
+    const [d, n] = counts(lane);
+    document.getElementById("count-" + lane).textContent = `${d}/${n}`;
+    document.getElementById("bar-" + lane).style.width = `${100 * d / n}%`;
+  }
+  const done = ALL.filter(x => state[x.id]?.done).length;
+  document.getElementById("overall-pct").textContent = Math.round(100 * done / ALL.length) + "%";
+  document.getElementById("overall-sub").textContent = `${done} of ${ALL.length} tasks`;
+
+  for (const lane of ["data", "web"]) {
+    const el = document.getElementById("name-" + lane);
+    if (document.activeElement !== el) el.value = names[lane] || "";
+    el.disabled = !canWrite;
+  }
+}
+
+async function resolveNames() {
+  if (!user) return;
+  const ids = [...new Set(Object.values(state).map(s => s.by).filter(Boolean))].filter(id => !(id in profileNames));
+  if (!ids.length) return;
+  try { const ps = await user.profiles(ids); ids.forEach(id => profileNames[id] = ps?.[id]?.name || ""); render(); } catch (e) {}
+}
+
+const setSync = msg => document.getElementById("sync").textContent = msg;
+
+document.addEventListener("change", async e => {
+  const cb = e.target.closest("input[type=checkbox][data-id]");
+  if (!cb || !db || !canWrite) return;
+  const id = cb.dataset.id;
+  let me = null; try { me = user ? await user.id() : null; } catch (err) {}
+  const body = cb.checked ? { done: true, by: me, at: new Date().toISOString() } : { done: false, by: null, at: null };
+  state = { ...state, [id]: body }; render();
+  try { await db.doc("tasks/" + id).set(body); }
+  catch (err) { setSync("Change not saved: this account has view-only access."); }
+});
+
+let nameTimer = null;
+for (const lane of ["data", "web"]) {
+  document.getElementById("name-" + lane).addEventListener("input", e => {
+    names = { ...names, [lane]: e.target.value.trim() };
+    clearTimeout(nameTimer);
+    nameTimer = setTimeout(async () => {
+      render();
+      if (!db || !canWrite) return;
+      try { await db.doc("team/lanes").set({ data: names.data, web: names.web }); } catch (err) {}
+    }, 700);
+  });
+}
+
+document.querySelectorAll(".copy").forEach(btn => btn.addEventListener("click", () => {
+  const pre = btn.nextElementSibling;
+  const fallback = () => { const r = document.createRange(); r.selectNodeContents(pre); const s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = "Press ⌘C"; };
+  try { navigator.clipboard.writeText(pre.textContent).then(() => { btn.textContent = "Copied"; setTimeout(() => btn.textContent = "Copy", 1500); }, fallback); }
+  catch (e) { fallback(); }
+}));
+
+render();
+
+(async () => {
+  if (!window.claude?.use) { setSync("Progress syncs when opened on claude.ai."); return; }
+  [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+  if (!db) { setSync("Sign in to claude.ai to update progress."); return; }
+  let can = null; try { can = user ? await user.can("data.write") : null; } catch (e) {}
+  canWrite = can !== false;
+  setSync(canWrite ? "Progress and owners are shared with everyone on this page." : "View only. Contributor access is required to update progress.");
+  render();
+  db.collection("tasks").onSnapshot(snap => {
+    const next = {}; snap.docs.forEach(d => next[d.id] = d.data());
+    state = next; render(); resolveNames();
+  }, () => setSync("Connection lost. Reload to resume syncing."));
+  db.doc("team/lanes").onSnapshot(snap => {
+    if (snap.exists) { const v = snap.data(); names = { data: v.data || "", web: v.web || "" }; render(); }
+  }, () => {});
+})();
+</script>
