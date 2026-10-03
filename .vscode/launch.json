@@ -1,0 +1,90 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Fetch data",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pipeline.fetch",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "Check data",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pipeline.check_data",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "Backtest (BTC, v1)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pipeline.backtest",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "Live prediction log",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pipeline.live_log",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "Run pipeline",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pipeline.run",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "Serve dashboard",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "http.server",
+      "args": [
+        "-d",
+        "web",
+        "8000"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "serverReadyAction": {
+        "pattern": "Serving HTTP on .* port ([0-9]+)",
+        "uriFormat": "http://localhost:%s",
+        "action": "openExternally"
+      }
+    },
+    {
+      "name": "Current pipeline module",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pipeline.${fileBasenameNoExtension}",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "Pytest",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "tests",
+        "-q"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false
+    }
+  ]
+}

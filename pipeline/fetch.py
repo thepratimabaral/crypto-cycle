@@ -1,27 +1,62 @@
+"""Download full daily price history from free public APIs (no account or API key needed).
+
+Run from the project root:  python pipeline/fetch.py
+BTC    -> Blockchain.com (price since 2010, hash rate, miner revenue)
+Others -> Binance (daily prices since each coin was listed)
+Saves one file per coin in data/raw/.
+"""
+
 #importing libraries
 
 import requests                         # requesting website for data
 import pandas as pd
 from pathlib import Path                # works with folders and file path
 
-DATA_FOLDER = Path("data/raw")          #where the downloaded files get saved
+# where the downloaded files get saved.
+# Built from this file's location, so it works no matter which folder you run from.
+RAW_DIR = Path(__file__).resolve().parent.parent / "data" / "raw"
+DATA_FOLDER = RAW_DIR                   # same folder, the name I used first
+
+
+def _today():
+    """Today's date in UTC, with no time part (e.g. 2026-10-03 00:00)."""
+    return pd.Timestamp.now(tz="UTC").normalize().tz_localize(None)
+
+
+def download(url):
+    """Call an API address and return its answer as Python data."""
+    response = requests.get(url, timeout=60)   # give up if no answer within 60 seconds
+    response.raise_for_status()                # stop with an error if the website said "error"
+    return response.json()
 
 
 #------- for btc--------#
+def get_blockchain_chart(chart):
+    """One Blockchain.com chart (e.g. "market-price"): one value per day, with the date as label."""
+    url = f"https://api.blockchain.info/charts/{chart}?timespan=all&format=json&sampled=false"     #API address
+    data = download(url)                             #downloads the data from web and turns it in python data to use
+    table = pd.DataFrame(data["values"])             #turns the list of daily values into a table
+    table["x"] = pd.to_datetime(table["x"], unit="s").dt.normalize()   #Turn the timestamp numbers into real dates
+    return table.set_index("x")["y"]                 # x is the date, y is the value
+
+
 def get_btc():
-     
-    url = "https://api.blockchain.info/charts/market-price?timespan=all&format=json&sampled=false"     #API address
-    data = requests.get(url).json()                  #downloads the data from web and turns it in python data to use
-    table = pd.DataFrame(data["values"])             #turns the list of daily prices into a table
-    table = table.rename(columns={"x": "date", "y": "close"})               #Rename the columns: x is the date, y is the price
-    table["date"] = pd.to_datetime(table["date"], unit="s")                 #Turn the timestamp numbers into real dates
-    table = table[table["close"] > 0]                                       #Remove the days with price 0 (before 2010-08-18)
-    return table
+    price = get_blockchain_chart("market-price")             # BTC price in USD
+    hashrate = get_blockchain_chart("hash-rate")             # computing power securing Bitcoin (for Hash Ribbons)
+    revenue = get_blockchain_chart("miners-revenue")         # USD paid to miners per day (for Puell Multiple)
 
-# ---- TEST: run the function and show the last 5 rows ----
+    price = price[price > 0]                                 #Remove the days with price 0 (before 2010-08-18)
 
-#btc = get_btc()
-#print(btc.head()) 
+    # Put the three side by side, one row per price day.
+    # If hash rate or revenue has no value on a day, copy the day before (ffill = "fill forward").
+    table = pd.DataFrame({
+        "close": price,
+        "hashrate": hashrate.reindex(price.index).ffill(),
+        "miners_revenue": revenue.reindex(price.index).ffill(),
+    })
+    table.index.name = "date"
+    return table.reset_index()                               # date back as a normal column, like get_binance
+
 
 #------- for other 6 coins-------#
 
@@ -34,7 +69,7 @@ def get_binance(symbol):
             "https://data-api.binance.vision/api/v3/klines"
             f"?symbol={symbol}&interval=1d&limit=1000&startTime={start_time}"
         )
-        page = requests.get(url).json()      # downloads the data from web and here one page = up to 1000 days
+        page = download(url)                 # downloads the data from web and here one page = up to 1000 days
 
         all_days = all_days + page           # the new page's days are added to the end of the pile
 
@@ -53,33 +88,27 @@ def get_binance(symbol):
     return table
 
 
-# ---- TEST ----
-#eth = get_binance("ETHUSDT")
-#print(eth.head())                       # first 5 days
-#print(eth.tail())                       # last 5 days
-#print(len(eth), "days")                 # total count, e.g. 3335 days
-
-# ---- TEST: every Binance coin ----
-#coins = ["ETHUSDT", "BNBUSDT", "SOLUSDT", "XRPUSDT", "ADAUSDT", "DOGEUSDT"]
-
-# for coin in coins:
-#     table = get_binance(coin)           # Download this coin
-#     first_day = table["date"].iloc[0].date()
-#     last_price = table["close"].iloc[-1]
-#     print(coin, "→", len(table), "days, from", first_day, ", last price", last_price)
-
-
 #------- the one the rest of the project uses -------#
 def load_coin(symbol, binance_symbol):                              # the name Binance uses, or none for BTC
-    if binance_symbol is None:                # no Binance name → it's BTC
-        table = get_btc()
-    else:                                     # otherwise → ask Binance
-        table = get_binance(binance_symbol)
+    saved_file = RAW_DIR / f"{symbol}.csv"                          # e.g. data/raw/SOL.csv
 
-    table = table.set_index("date")           # date becomes the row label
+    try:
+        if binance_symbol is None:                # no Binance name → it's BTC
+            table = get_btc()
+        else:                                     # otherwise → ask Binance
+            table = get_binance(binance_symbol)
+    except Exception as error:
+        # The website is down or changed: use the copy we saved last time instead of stopping.
+        if not saved_file.exists():
+            raise                                 # no saved copy either → we really can't continue
+        print(f"  ! {symbol}: download failed ({error}); using the saved file")
+        return pd.read_csv(saved_file, index_col="date", parse_dates=True)
 
-    DATA_FOLDER.mkdir(parents=True, exist_ok=True)
-    table.to_csv(DATA_FOLDER / f"{symbol}.csv")   # e.g. data/raw/SOL.csv
+    table = table.set_index("date")               # date becomes the row label
+    table = table[table.index < _today()]         # drop today: its price isn't final until midnight UTC
+
+    RAW_DIR.mkdir(parents=True, exist_ok=True)
+    table.to_csv(saved_file)
     return table
 
 # ---- TEST: only runs when I click ▶ on this file ----

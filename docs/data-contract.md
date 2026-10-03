@@ -101,6 +101,7 @@ All arrays in `timeline` have the same length as `dates`. `backtest` has keys `"
       "madeOn": "2026-10-02",
       "horizon": 90,
       "targetDate": "2026-12-31",
+      "method": "v1",
       "score": 58.1,
       "regime": "Early Expansion",
       "pUp": 0.64,
@@ -119,3 +120,5 @@ All arrays in `timeline` have the same length as `dates`. `backtest` has keys `"
 Rules: entries are **never edited or deleted**, except that the pipeline fills in the
 `outcome*`, `wentUp`, `correct`, `resolvedOn` fields and sets `status` to `"resolved"`
 once `targetDate` has passed. `correct` = (`pUp` > 0.5) == `wentUp`.
+`madeOn` is the date of the close the forecast used (the last complete UTC day).
+`method` is the pre-registered method version that made the forecast (`docs/method-v1.md`).

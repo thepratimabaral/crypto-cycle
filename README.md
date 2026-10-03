@@ -18,9 +18,12 @@ python3 pipeline/check_data.py   # check the data: PASS / FAIL
 python3 -m http.server -d web 8000   # then open http://localhost:8000
 ```
 
+In VS Code: install the recommended extensions when prompted, run **Tasks: Run Task → Setup**
+once, then pick *Check data*, *Run pipeline* or *Serve dashboard* from the Run and Debug panel (F5).
+
 ## Data sources (free, no API key)
 
-- BTC daily price: blockchain.info charts API
+- BTC price, hash rate and miner revenue: blockchain.info charts API
 - ETH, BNB, SOL, XRP, ADA, DOGE daily prices: Binance public market-data API
 - Fear & Greed Index: alternative.me
 
