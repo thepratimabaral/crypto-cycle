@@ -13,13 +13,14 @@ that show whether those predictions actually work.
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-python3 -m pipeline.run          # downloads data, writes web/data/*.json  (from Day 3)
+python3 pipeline/fetch.py        # download price history to data/raw/
+python3 pipeline/check_data.py   # check the data: PASS / FAIL
 python3 -m http.server -d web 8000   # then open http://localhost:8000
 ```
 
 ## Data sources (free, no API key)
 
-- BTC price, hash rate and miner revenue: blockchain.info charts API
+- BTC daily price: blockchain.info charts API
 - ETH, BNB, SOL, XRP, ADA, DOGE daily prices: Binance public market-data API
 - Fear & Greed Index: alternative.me
 

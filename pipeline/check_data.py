@@ -1,109 +1,83 @@
-"""Download every asset and report coverage and data-quality problems.
+# ----------------------------------Part1--------------------------------------------------
+# check_data.py: reads every saved coin file and checks the data is good
 
-Run from the project root:  python -m pipeline.check_data
-Exits with code 1 if any asset fails to load or has a blocking problem.
-"""
-import sys
+import pandas as pd                     #importing libraries
 
-import pandas as pd
+# The coins we expect to find in data/raw/
+COINS = ["BTC", "ETH", "BNB", "SOL", "XRP", "ADA", "DOGE"]
 
-from pipeline.fetch import load_coin
+problems = []        # a notepad: we write down anything that looks wrong, so we can sum it up at the end
 
-# symbol -> Binance pair (None = BTC from blockchain.info)
-ASSETS = {
-    "BTC": None,
-    "ETH": "ETHUSDT",
-    "BNB": "BNBUSDT",
-    "SOL": "SOLUSDT",
-    "XRP": "XRPUSDT",
-    "ADA": "ADAUSDT",
-    "DOGE": "DOGEUSDT",
-}
+for coin in COINS:
+    # Read the CSV file, e.g. data/raw/SOL.csv
+    table = pd.read_csv(
+        f"data/raw/{coin}.csv",
+        index_col="date",       # Use the date column as row labels, the same as set_index("date")
+        parse_dates=True,       # treat those labels as real dates
+    )
+# ---- EXPERIMENT: break the data on purpose (delete this line after testing) ----
+    #table = table.drop(table.index[10:13])     # remove 3 days (rows 10, 11, 12)
 
-MAX_STALE_DAYS = 3        # last row older than this = blocking
-MAX_DAILY_MOVE = 0.60     # |1-day return| above this is flagged for review
+    # table.iloc[10, 0] = 0          # TEMPORARY: set one price to 0
+    # table.iloc[20, 0] = None       # TEMPORARY: make one price empty
 
+    first_day = table.index[0].date()           # The first date
+    last_day = table.index[-1].date()           # The last date
 
-def check(symbol, df):
-    """Return (row dict, list of blocking problems, list of warnings)."""
-    blocking, warnings = [], []
-    close = df["close"]
+    print(coin, ":", first_day, "→", last_day, ",", len(table), "days")
 
-    expected = pd.date_range(df.index.min(), df.index.max(), freq="D")
-    missing = expected.difference(df.index)
-    if len(missing):
-        blocking.append(f"{len(missing)} missing days")
+# ----------------------------------Part2--------------------------------------------------
+# --------------------------- CHECK 1: missing days ---------------------------------------
+   
+    # Every date that SHOULD exist, from the first day to the last day
+    expected_days = pd.date_range(start=table.index[0], end=table.index[-1], freq="D")
 
-    if df.index.duplicated().any():
-        blocking.append(f"{df.index.duplicated().sum()} duplicate dates")
+    # Dates that should exist but are not in our table
+    missing_days = expected_days.difference(table.index)
 
-    nonpos = int((close <= 0).sum())
-    if nonpos:
-        blocking.append(f"{nonpos} zero/negative prices")
-
-    nulls = df.isna().sum()
-    for col, n in nulls.items():
-        if n:
-            (blocking if col == "close" else warnings).append(f"{n} empty values in {col}")
-
-    stale = (pd.Timestamp.now(tz="UTC").normalize().tz_localize(None) - df.index.max()).days
-    if stale > MAX_STALE_DAYS:
-        blocking.append(f"last row is {stale} days old")
-
-    # Forward-filled gaps show up as long runs of identical prices.
-    runs = (close != close.shift()).cumsum()
-    longest_flat = int(close.groupby(runs).size().max())
-    if longest_flat >= 5:
-        warnings.append(f"price unchanged for {longest_flat} days in a row")
-
-    moves = close.pct_change().abs()
-    big = moves[moves > MAX_DAILY_MOVE]
-    if len(big):
-        days = ", ".join(f"{d:%Y-%m-%d} ({m:+.0%})" for d, m in big.head(3).items())
-        more = f" +{len(big) - 3} more" if len(big) > 3 else ""
-        warnings.append(f"{len(big)} daily moves over {MAX_DAILY_MOVE:.0%}: {days}{more}")
-
-    row = {
-        "asset": symbol,
-        "first": f"{df.index.min():%Y-%m-%d}",
-        "last": f"{df.index.max():%Y-%m-%d}",
-        "rows": len(df),
-        "years": round(len(df) / 365.25, 1),
-        "first_close": close.iloc[0],
-        "last_close": close.iloc[-1],
-        "columns": ", ".join(df.columns),
-    }
-    return row, blocking, warnings
+    if len(missing_days) == 0:
+        print("   ✓ no missing days")
+    else:
+        print("   ✗", len(missing_days), "missing days, e.g.", missing_days[:3].date)
+        problems.append(f"{coin}: {len(missing_days)} missing days")   # note this problem in the notepad
 
 
-def main():
-    rows, failed = [], False
-    for symbol, pair in ASSETS.items():
-        try:
-            df = load_coin(symbol, pair)
-        except Exception as e:
-            print(f"✗ {symbol}: could not load ({e})")
-            failed = True
-            continue
-        row, blocking, warnings = check(symbol, df)
-        rows.append(row)
-        status = "✗" if blocking else "✓"
-        print(f"{status} {symbol}: {row['first']} → {row['last']} · {row['rows']:,} days")
-        for msg in blocking:
-            print(f"    BLOCKING  {msg}")
-        for msg in warnings:
-            print(f"    warning   {msg}")
-        failed |= bool(blocking)
 
-    if rows:
-        print()
-        table = pd.DataFrame(rows).set_index("asset")
-        with pd.option_context("display.width", 140, "display.float_format", "{:,.4f}".format):
-            print(table)
+# ----------------------------------Part3--------------------------------------------------
+# -------------------------- CHECK 2: duplicate dates----------------------------------------
+   
+    duplicates = table.index.duplicated().sum()
+    if duplicates == 0:
+        print("   ✓ no duplicate dates")
+    else:
+        print("   ✗", duplicates, "duplicate dates")
+        problems.append(f"{coin}: {duplicates} duplicate dates")
+# ----------------------------------Part4--------------------------------------------------
+# -------------------------- CHECK 3: empty prices ----------------------------------------
+    
+    empty = table["close"].isna().sum()
+    if empty == 0:
+        print("   ✓ no empty prices")
+    else:
+        print("   ✗", empty, "empty prices")
+        problems.append(f"{coin}: {empty} empty prices")
+# ----------------------------------Part4--------------------------------------------------
+# ---------------------------- CHECK 4: zero or negative prices ---------------------------
+   
+    bad_prices = (table["close"] <= 0).sum()
+    if bad_prices == 0:
+        print("   ✓ no zero or negative prices")
+    else:
+        print("   ✗", bad_prices, "zero or negative prices")
+        problems.append(f"{coin}: {bad_prices} zero or negative prices")
 
-    print("\nRESULT:", "FAIL" if failed else "PASS")
-    return 1 if failed else 0
 
-
-if __name__ == "__main__":
-    sys.exit(main())
+# -------------------------------------- FINAL RESULT ---------------------------------------
+# ---- FINAL RESULT: one clear answer, PASS if the notepad is empty, FAIL if it has anything written in it ----
+print()
+if len(problems) == 0:
+    print("RESULT: PASS ✓  all", len(COINS), "coins look good")
+else:
+    print("RESULT: FAIL ✗ ", len(problems), "problem(s) found:")
+    for problem in problems:                      # read out each problem from the notepad
+        print("  -", problem)
